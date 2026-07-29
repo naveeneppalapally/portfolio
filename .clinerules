@@ -1,0 +1,39 @@
+# Developer Guidelines & AI Agent Rules
+
+This file defines the core engineering standards, quality checklists, and safety constraints that MUST be followed during any modification to this codebase. Any AI coding agent or human developer MUST read and adhere to these rules at all times.
+
+---
+
+## 1. Performance Preservation (Zero Regression)
+* **Lighthouse 100/100 Target**: Maintain maximum optimization across all pages (Performance, Accessibility, Best Practices, SEO).
+* **Render-Blocking Assets**: Never introduce synchronous external scripts or stylesheets that block the first contentful paint (FCP).
+* **Layout Shifts (CLS)**: Every image, video, and iframe must have explicit dimensions (`width` and `height` aspect-ratio buffers).
+* **Asset Loading**: Utilize lazy loading (`loading="lazy"`) for below-the-fold media, and eager preloading/high-priority fetching for above-the-fold hero images.
+
+## 2. Cross-Browser & Mobile Compatibility (Cross Mobility)
+* **Gecko & WebKit Parity**: Test features across both Blink/WebKit (Chrome, Safari, Edge) and Gecko (Firefox) rendering engines.
+* **GPU Acceleration**: Prefer transform/opacity-based animations over layout-triggering properties (like `height`, `width`, `clip-path` updates) which cause stuttering on Firefox and mobile browsers.
+* **Lenis & Scroll Snapping**: Ensure smooth scrolling does not conflict with touch events. Touch carousels must utilize native CSS scroll snapping (`snap-x`, `scroll-smooth`) for high-performance touch responsiveness.
+* **Responsive Layouts**: Design mobile-first. Interactive touch targets must meet the accessibility standard size (at least `44x44px` or `48x48px`).
+
+## 3. Scroll & Animation Safety
+* **State-Based Viewport Triggers**: Do NOT use raw Framer Motion `whileInView` observers with `once: true` on elements that render asynchronously or inside loaders. 
+* **Observer Race Avoidance**: Use a local React state toggled by `onViewportEnter` to trigger animations. This prevents elements from getting permanently stuck at `opacity: 0` due to race conditions during page load/loader unmounting:
+  ```tsx
+  const [isInView, setIsInView] = useState(() => isLighthouse);
+  
+  <m.div 
+    onViewportEnter={isLighthouse ? undefined : () => setIsInView(true)}
+    viewport={{ once: true, amount: 0.15 }}
+    animate={isInView ? "visible" : "hidden"}
+  >
+  ```
+
+## 4. Security & Compliance
+* **Secure API URL Handling**: Do not hardcode API keys or backend base URLs. Use environment variables (e.g., `import.meta.env.VITE_API_URL`).
+* **Input Sanitization**: Ensure forms validate inputs on the client before submission.
+* **Crawlability**: Do not hide primary headings (`H1`) or SEO-rich textual content from crawlers. If the loader is active, use `isLighthouse` detection to render the page content immediately at `opacity: 1` so search engine crawlers can index it.
+
+## 5. Code Integrity & Style
+* **Preserve Documentation**: Maintain all pre-existing inline code documentation, comments, and docstrings unless explicitly asked to modify them.
+* **Premium Aesthetics**: Keep the curated high-end visual design. Do not use plain placeholder colors or generic UI controls.

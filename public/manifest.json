@@ -1,0 +1,13 @@
+{
+  "name": "Naveen — Creative Developer",
+  "short_name": "Naveen",
+  "description": "Immersive, performance-obsessed websites. Next.js, motion systems, award-calibre craft.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#0C0C0E",
+  "background_color": "#0C0C0E",
+  "lang": "en",
+  "categories": ["portfolio", "design", "development"],
+  "icons": []
+}

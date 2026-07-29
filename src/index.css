@@ -1,0 +1,508 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   INK & SIGNAL — Design System
+   Self-hosted fonts · per-section accents · GPU-only motion
+   ============================================================ */
+
+/* ---------- Fonts (self-hosted, see public/fonts) ---------- */
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/clash-display-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/clash-display-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/clash-display-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/clash-display-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fonts/instrument-serif-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-var-latin.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-var-latin.woff2') format('woff2');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- Tokens ---------- */
+:root {
+  --ink: #0C0C0E;
+  --ink-2: #131316;
+  --ink-3: #1A1A1F;
+  --paper: #F3F1EC;
+  --paper-2: #EAE7DF;
+
+  --signal: #FF4D1C;
+  --glacier: #6E8CFF;
+  --moss: #3FA66A;
+  --violet: #9B8CFF;
+
+  /* Dynamic — flipped by ThemeContext as sections scroll into view */
+  --accent: #FF4D1C;
+
+  /* Section-scoped (default = ink) */
+  --bg: var(--ink);
+  --fg: #F3F1EC;
+  --muted: rgba(243, 241, 236, 0.55);
+  --hair: rgba(243, 241, 236, 0.14);
+
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-expo-in-out: cubic-bezier(0.87, 0, 0.13, 1);
+}
+
+
+/* ---------- Base ---------- */
+html {
+  scroll-behavior: auto; /* Lenis owns scrolling */
+  background: var(--ink);
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  background: var(--ink);
+  color: #F3F1EC;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+::-webkit-scrollbar-thumb {
+  background: #2A2A30;
+  border-radius: 8px;
+  border: 3px solid var(--ink);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------- Section theming ---------- */
+.section {
+  position: relative;
+  background: var(--bg);
+  color: var(--fg);
+  z-index: var(--section-z, 1);
+}
+.section--paper {
+  --bg: var(--paper);
+  --fg: #131311;
+  --muted: rgba(19, 19, 17, 0.6);
+  --hair: rgba(19, 19, 17, 0.14);
+}
+
+/* GSAP pin-spacer inherits section background to prevent black bleed-through */
+.pin-spacer {
+  background: inherit;
+}
+
+/* Soft blend bridges between dark ↔ light sections (kills the hard cut) */
+.blend {
+  pointer-events: none;
+  display: block;
+  height: clamp(90px, 14vh, 160px);
+}
+.blend--paper-to-ink {
+  background: linear-gradient(to bottom, var(--paper) 0%, var(--ink) 100%);
+}
+.blend--ink-to-paper {
+  background: linear-gradient(to bottom, var(--ink) 0%, var(--paper) 100%);
+}
+
+/* Accent-driven primitives (smooth re-tint on section change) */
+.accent-tint {
+  color: var(--accent);
+  transition: color 0.6s ease;
+}
+.accent-bg {
+  background-color: var(--accent);
+  transition: background-color 0.6s ease;
+}
+.accent-border {
+  border-color: var(--accent);
+  transition: border-color 0.6s ease;
+}
+
+/* ---------- Typography primitives ---------- */
+.eyebrow {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.eyebrow .tick {
+  color: var(--accent);
+  transition: color 0.6s ease;
+}
+
+.display {
+  font-family: 'Clash Display', 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+}
+
+.serif-accent {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* ---------- Grain / noise overlay ---------- */
+.noise-overlay {
+  position: fixed;
+  inset: -50%;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 250px 250px;
+}
+
+/* ---------- Scroll progress bar ---------- */
+@keyframes scroll-progress-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+#scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 90;
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  background: var(--accent);
+  transition: background-color 0.6s ease;
+}
+@supports (animation-timeline: scroll()) {
+  #scroll-progress {
+    animation: scroll-progress-grow linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+/* ---------- CSS scroll-reveal system (preserved API) ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.9s var(--ease-expo-out),
+    transform 0.9s var(--ease-expo-out);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.06s; }
+.reveal-delay-2 { transition-delay: 0.12s; }
+.reveal-delay-3 { transition-delay: 0.18s; }
+.reveal-delay-4 { transition-delay: 0.24s; }
+.reveal-delay-5 { transition-delay: 0.30s; }
+.reveal-delay-6 { transition-delay: 0.36s; }
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-32px);
+  transition:
+    opacity 0.9s var(--ease-expo-out),
+    transform 0.9s var(--ease-expo-out);
+}
+.reveal-left.is-visible { opacity: 1; transform: translateX(0); }
+.reveal-right {
+  opacity: 0;
+  transform: translateX(32px);
+  transition:
+    opacity 0.9s var(--ease-expo-out),
+    transform 0.9s var(--ease-expo-out);
+}
+.reveal-right.is-visible { opacity: 1; transform: translateX(0); }
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.94);
+  transition:
+    opacity 1s var(--ease-expo-out),
+    transform 1s var(--ease-expo-out);
+}
+.reveal-scale.is-visible { opacity: 1; transform: scale(1); }
+.reveal-blur {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(16px);
+  transition:
+    opacity 1s var(--ease-expo-out),
+    filter 1s var(--ease-expo-out),
+    transform 1s var(--ease-expo-out);
+}
+.reveal-blur.is-visible { opacity: 1; filter: blur(0); transform: translateY(0); }
+.reveal-fade { opacity: 0; transition: opacity 1.1s ease; }
+.reveal-fade.is-visible { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-blur, .reveal-fade {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}
+
+html.lh-mode .reveal,
+html.lh-mode .reveal-left,
+html.lh-mode .reveal-right,
+html.lh-mode .reveal-scale,
+html.lh-mode .reveal-blur,
+html.lh-mode .reveal-fade {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+/* ---------- Page enter (view transitions) ---------- */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes pageEnter {
+    from { opacity: 1; transform: none; }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@keyframes shimmer-sweep {
+  0% { left: -100%; }
+  100% { left: 150%; }
+}
+
+/* ============================================================
+   PRELOADER — counter + curtain
+   SSR markup lives in app/layout.tsx; an inline script drives
+   the count pre-hydration; ClientApp adds .pl-exit for the lift.
+   ============================================================ */
+#preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--ink);
+  color: #F3F1EC;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  transition: transform 1s var(--ease-expo-in-out);
+  will-change: transform;
+}
+html.pl-exit #preloader {
+  transform: translateY(-101%);
+  pointer-events: none;
+}
+#preloader .pl-inner-fade {
+  transition:
+    opacity 0.45s ease,
+    filter 0.45s ease,
+    transform 1s var(--ease-expo-in-out);
+}
+html.pl-exit #preloader .pl-inner-fade {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(-48px);
+}
+
+#preloader .pl-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(243, 241, 236, 0.55);
+}
+#preloader .pl-top .pl-dot { color: var(--accent); }
+
+#preloader .pl-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+#preloader .pl-word {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(0.75rem, 1.4vw, 0.95rem);
+  letter-spacing: 0.55em;
+  text-transform: uppercase;
+  color: rgba(243, 241, 236, 0.6);
+  transition: opacity 0.18s ease, filter 0.18s ease;
+}
+#preloader .pl-word.pl-swap {
+  opacity: 0;
+  filter: blur(6px);
+}
+
+#preloader .pl-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+#preloader .pl-counter {
+  font-family: 'Clash Display', sans-serif;
+  font-weight: 600;
+  font-size: clamp(5rem, 17vw, 15rem);
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: #F3F1EC;
+  transition: filter 0.12s ease, color 0.3s ease;
+}
+#preloader .pl-counter.pl-tick { filter: blur(3px); }
+#preloader .pl-counter.pl-final { color: var(--accent); }
+#preloader .pl-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.9rem;
+  padding-bottom: clamp(0.5rem, 2vw, 1.5rem);
+}
+#preloader .pl-bar {
+  width: clamp(140px, 22vw, 320px);
+  height: 1px;
+  background: rgba(243, 241, 236, 0.16);
+  position: relative;
+  overflow: hidden;
+}
+#preloader .pl-bar-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+#preloader .pl-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(243, 241, 236, 0.45);
+}
+
+html.lh-mode #preloader,
+html.skip-loader-all #preloader {
+  display: none !important;
+}
+
+/* SSR hero hint: hidden for real users once CSS loads; kept for LCP under LH */
+#ssr-hero-hint { transition: opacity 0.2s ease; }
+html:not(.lh-mode) #ssr-hero-hint { opacity: 0; }
+
+/* ---------- Hairline helpers ---------- */
+.hair-x { height: 1px; background: var(--hair); border: 0; }
+.hair-y { width: 1px; background: var(--hair); border: 0; }
+
+/* ---------- Link sweep (nav / footer) ---------- */
+.link-sweep {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+}
+.link-sweep .ls-a,
+.link-sweep .ls-b {
+  display: block;
+  transition: transform 0.5s var(--ease-expo-out);
+}
+.link-sweep .ls-b {
+  position: absolute;
+  inset: 0;
+  transform: translateY(105%);
+  color: var(--accent);
+}
+.link-sweep:hover .ls-a { transform: translateY(-105%); }
+.link-sweep:hover .ls-b { transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+

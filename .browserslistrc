@@ -1,0 +1,6 @@
+# Target modern browsers only — eliminates polyfills for Array.at, Object.fromEntries etc.
+# Saves ~11kB from the vendor bundle and reduces TBT
+Chrome >= 90
+Edge >= 90
+Firefox >= 88
+Safari >= 14

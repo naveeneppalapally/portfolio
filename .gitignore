@@ -1,0 +1,48 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.vercel
+
+# Dev artefacts — never commit these
+scratch/
+test-screenshots/
+.playwright-mcp/
+qa-audit*.cjs
+qa-audit*.md
+dist/
+.env*.local
+*.zip
+pdfs/
+.wrangler/
+.wrangler
+
+# TypeScript incremental build cache — generated, never commit
+tsconfig.tsbuildinfo
+
+.next/
+.env
+.env.local
+
+out/
