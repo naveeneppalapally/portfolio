@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition, useRef, Suspense } from 'react';
 import Lenis from 'lenis';
 import Navbar from '../src/components/Navbar';
 import Footer from '../src/components/Footer';
-import CustomCursor from '../src/components/CustomCursor';
+
 import ScrollToTop from '../src/components/ScrollToTop';
 import ViewErrorBoundary from '../src/components/ViewErrorBoundary';
 import ClientOnly from '../src/components/ClientOnly';
@@ -224,7 +224,7 @@ function AppContent() {
         </ViewErrorBoundary>
       </main>
 
-      <CustomCursor />
+
       <ScrollToTop />
     </>
   );
