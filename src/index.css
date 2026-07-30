@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Force native cursor — custom cursor removed */
+*, *::before, *::after { cursor: auto !important; }
+a, button, [role="button"], [data-cursor] { cursor: pointer !important; }
+
 /* ============================================================
    INK & SIGNAL — Design System
    Self-hosted fonts · per-section accents · GPU-only motion
