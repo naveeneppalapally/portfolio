@@ -130,7 +130,7 @@ export default function MeshGradient({ className = '' }: { className?: string })
       ref={canvasRef}
       aria-hidden="true"
       className={`absolute inset-0 h-full w-full ${className}`}
-      style={{ filter: 'blur(70px) saturate(1.25)', transform: 'scale(1.15)' }}
+      style={{ filter: 'blur(45px) saturate(1.2)', transform: 'scale(1.1)' }}
     />
   );
 }

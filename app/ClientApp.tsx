@@ -79,12 +79,10 @@ function AppContent() {
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
     const lenis = new Lenis({
-      // lerp mode: no long inertia tail, direction changes respond immediately
-      lerp: 0.11,
+      // lerp: fraction of distance to close per frame — 0.08 is smooth without lag
+      lerp: 0.08,
       smoothWheel: true,
-      // Lenis doesn't smooth touch by default — native mobile scroll handles
-      // reverse direction properly without intervention.
-      touchMultiplier: isTouchDevice ? 1 : 1.4,
+      touchMultiplier: isTouchDevice ? 1 : 1.2,
     });
     (window as unknown as { lenis?: Lenis }).lenis = lenis;
 
@@ -92,6 +90,7 @@ function AppContent() {
     const raf = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
+    gsap.ticker.fps(60); // cap at 60fps — prevents jitter on 120Hz screens
 
     // Re-measure once webfonts settle (headline metrics shift)
     if (document.fonts?.ready) {
