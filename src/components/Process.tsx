@@ -227,7 +227,7 @@ export default function Process() {
       className={`section section--paper ${staticMode ? 'h-auto' : 'h-[450vh]'}`}
       style={{ zIndex: 5 }}
     >
-      <div className={`flex items-center ${staticMode ? 'overflow-x-auto py-[clamp(4rem,10vh,7rem)]' : 'sticky top-0 h-screen overflow-hidden'}`} style={{ position: staticMode ? undefined : 'sticky' }}>
+      <div className={`flex items-center ${staticMode ? 'overflow-x-auto py-[clamp(4rem,10vh,7rem)]' : 'sticky top-0 h-screen overflow-hidden'}`} style={{ position: staticMode ? undefined : 'sticky', background: 'var(--paper)' }}>
         <div
           ref={trackRef}
           className={`flex items-stretch will-change-transform ${staticMode ? 'w-full snap-x snap-mandatory gap-[5vw] overflow-x-auto px-[clamp(1.5rem,5vw,4rem)] pb-8' : 'w-max'}`}
