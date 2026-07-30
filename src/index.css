@@ -498,7 +498,7 @@ html.skip-loader-all #preloader {
 @media (max-width: 640px) {
   #preloader {
     padding: 1.25rem;
-    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0.75rem));
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 1rem));
   }
   #preloader .pl-top {
     font-size: 0.625rem;
@@ -514,7 +514,7 @@ html.skip-loader-all #preloader {
     gap: 1rem;
   }
   #preloader .pl-counter {
-    font-size: clamp(2.2rem, 11vw, 3.2rem);
+    font-size: clamp(2rem, 9vw, 2.8rem);
   }
   #preloader .pl-right {
     width: 100%;

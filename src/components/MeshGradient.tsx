@@ -31,8 +31,8 @@ const BLOBS: Blob[] = [
   { hue: [155, 140, 255], alpha: 0.42, radius: 0.5, ax: 0.3, bx: 0.22, cx: 0.48, ay: 0.3, by: 0.14, cy: 0.5, sx: 0.6, sy: 0.85, px: 2.1, py: 4.0 },
   // glacier
   { hue: [110, 140, 255], alpha: 0.38, radius: 0.46, ax: 0.36, bx: 0.12, cx: 0.52, ay: 0.26, by: 0.2, cy: 0.46, sx: 0.75, sy: 0.55, px: 4.4, py: 2.2 },
-  // deep ember (dim warm)
-  { hue: [255, 122, 60], alpha: 0.22, radius: 0.62, ax: 0.26, bx: 0.2, cx: 0.5, ay: 0.3, by: 0.12, cy: 0.55, sx: 0.5, sy: 0.62, px: 5.6, py: 0.4 },
+  // deep ember (dim warm) — cx pushed right to fill the dark right edge on mobile
+  { hue: [255, 122, 60], alpha: 0.22, radius: 0.62, ax: 0.26, bx: 0.2, cx: 0.68, ay: 0.3, by: 0.12, cy: 0.55, sx: 0.5, sy: 0.62, px: 5.6, py: 0.4 },
   // indigo depth
   { hue: [80, 92, 220], alpha: 0.26, radius: 0.58, ax: 0.3, bx: 0.16, cx: 0.5, ay: 0.22, by: 0.18, cy: 0.5, sx: 0.55, sy: 0.8, px: 1.0, py: 5.1 },
 ];
