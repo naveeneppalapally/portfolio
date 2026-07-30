@@ -199,9 +199,6 @@ export default function Hero() {
                 innerClassName="font-mono text-[0.7rem] font-medium uppercase tracking-[0.22em] text-ink"
                 ariaLabel="Available for projects — jump to contact"
               >
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-ink" />
-                </span>
                 Available for projects
               </MagneticButton>
               <button
