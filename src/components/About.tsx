@@ -83,7 +83,6 @@ export default function About() {
                   className="flex items-center gap-2 rounded-full px-3 py-1.5 font-mono text-[0.54rem] uppercase tracking-[0.2em]"
                   style={{ background: 'rgba(243,241,236,0.1)', backdropFilter: 'blur(8px)', color: '#F3F1EC' }}
                 >
-                  <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full" style={{ background: 'var(--accent)' }} />
                   Open for Q3
                 </span>
               </div>

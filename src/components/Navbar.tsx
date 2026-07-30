@@ -82,12 +82,7 @@ export default function Navbar() {
           className="group flex items-center gap-3 font-mono text-[0.66rem] uppercase tracking-[0.24em] text-[#F3F1EC]"
           data-cursor="link"
         >
-          <span className="relative flex h-1.5 w-1.5">
-            <span
-              className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full"
-              style={{ background: 'var(--accent)' }}
-            />
-          </span>
+
           <span className="link-sweep">
             <span className="ls-a">Start a project</span>
             <span className="ls-b" aria-hidden="true">Start a project</span>
