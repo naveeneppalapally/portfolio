@@ -1,25 +1,24 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { gsap } from '../lib/gsap';
 import { checkIsLowEndOrReducedMotion } from '../lib/utils';
 
 /* ============================================
-   CUSTOM CURSOR — accent dot + hairline ring
+   CUSTOM CURSOR — accent dot + trailing ring
    data-cursor="view"  → big accent disc w/ label
    data-cursor="link"  → ring expands
    Desktop (hover-capable) only.
-   ============================================ */
 
-type CursorVariant = 'default' | 'link' | 'view';
+   Uses GSAP quickTo for buttery-smooth interpolation
+   instead of raw mousemove — zero jitter, 60fps.
+   ============================================ */
 
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
-
-  const [variant, setVariant] = useState<CursorVariant>('default');
-  const [enabled, setEnabled] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const enabledRef = useRef(false);
 
   useEffect(() => {
     const isTouch =
@@ -28,50 +27,82 @@ export default function CustomCursor() {
       window.matchMedia('(hover: none)').matches;
     const shouldEnable = !isTouch && !checkIsLowEndOrReducedMotion();
 
-    const timer = setTimeout(() => setEnabled(shouldEnable), 0);
-    if (!shouldEnable) return () => clearTimeout(timer);
+    if (!shouldEnable) return;
+    enabledRef.current = true;
 
+    const dot = dotRef.current;
+    const ring = ringRef.current;
+    const label = labelRef.current;
+    if (!dot || !ring) return;
+
+    // Show cursor elements
+    dot.style.display = '';
+    ring.style.display = '';
+
+    // Hide the native cursor
     const style = document.createElement('style');
     style.id = 'custom-cursor-style';
     style.textContent = `*, *:hover, *::before, *::after { cursor: none !important; }`;
     document.head.appendChild(style);
 
-    const mouse = { x: -100, y: -100 };
-    const ring = { x: -100, y: -100 };
-    let raf = 0;
+    // GSAP quickTo — spring-damped followers, buttery smooth
+    const dotX = gsap.quickTo(dot, 'x', { duration: 0.15, ease: 'power2.out' });
+    const dotY = gsap.quickTo(dot, 'y', { duration: 0.15, ease: 'power2.out' });
+    const ringX = gsap.quickTo(ring, 'x', { duration: 0.45, ease: 'power3.out' });
+    const ringY = gsap.quickTo(ring, 'y', { duration: 0.45, ease: 'power3.out' });
+
+    let currentVariant = 'default';
 
     const onMove = (e: MouseEvent) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-      setVisible(true);
+      dotX(e.clientX);
+      dotY(e.clientY);
+      ringX(e.clientX);
+      ringY(e.clientY);
 
-      const dot = dotRef.current;
-      if (dot) dot.style.transform = `translate(${mouse.x}px, ${mouse.y}px) translate(-50%,-50%)`;
+      // Show on first move
+      dot.style.opacity = '1';
+      ring.style.opacity = '1';
 
+      // Detect variant from data-cursor attribute (no React setState = no re-renders)
       const target = (e.target as HTMLElement).closest?.('[data-cursor]') as HTMLElement | null;
-      const next = (target?.dataset.cursor as CursorVariant) || 'default';
-      setVariant((prev) => (prev === next ? prev : next));
+      const next = target?.dataset.cursor || 'default';
+
+      if (next !== currentVariant) {
+        currentVariant = next;
+        const isView = next === 'view';
+        const isLink = next === 'link';
+
+        // Dot hides during view mode
+        dot.style.opacity = isView ? '0' : '1';
+
+        // Ring size transitions
+        const size = isView ? 84 : isLink ? 56 : 38;
+        ring.style.width = `${size}px`;
+        ring.style.height = `${size}px`;
+        ring.style.border = isView ? 'none' : '1px solid var(--accent)';
+        ring.style.background = isView ? 'var(--accent)' : 'transparent';
+
+        if (label) {
+          label.style.opacity = isView ? '1' : '0';
+        }
+      }
     };
 
-    const loop = () => {
-      ring.x += (mouse.x - ring.x) * 0.16;
-      ring.y += (mouse.y - ring.y) * 0.16;
-      const el = ringRef.current;
-      if (el) el.style.transform = `translate(${ring.x}px, ${ring.y}px) translate(-50%,-50%)`;
-      raf = requestAnimationFrame(loop);
+    const onLeave = () => {
+      dot.style.opacity = '0';
+      ring.style.opacity = '0';
     };
-    raf = requestAnimationFrame(loop);
 
-    const onLeave = () => setVisible(false);
-    const onEnter = () => setVisible(true);
+    const onEnter = () => {
+      dot.style.opacity = '1';
+      ring.style.opacity = '1';
+    };
 
     document.addEventListener('mousemove', onMove, { passive: true });
     document.documentElement.addEventListener('mouseleave', onLeave);
     document.documentElement.addEventListener('mouseenter', onEnter);
 
     return () => {
-      clearTimeout(timer);
-      cancelAnimationFrame(raf);
       document.removeEventListener('mousemove', onMove);
       document.documentElement.removeEventListener('mouseleave', onLeave);
       document.documentElement.removeEventListener('mouseenter', onEnter);
@@ -79,37 +110,37 @@ export default function CustomCursor() {
     };
   }, []);
 
-  if (!enabled) return null;
-
-  const isView = variant === 'view';
-
   return (
     <>
-      {/* Dot */}
+      {/* Dot — snappy follow */}
       <div
         ref={dotRef}
         aria-hidden="true"
         className="pointer-events-none fixed left-0 top-0 z-[9999] rounded-full"
         style={{
+          display: 'none',
           width: 8,
           height: 8,
           background: 'var(--accent)',
-          opacity: visible && !isView ? 1 : 0,
+          opacity: 0,
+          transform: 'translate(-50%, -50%)',
           transition: 'opacity 0.2s ease, background 0.6s ease',
           willChange: 'transform',
         }}
       />
-      {/* Ring / view disc */}
+      {/* Ring — smooth trailing follow */}
       <div
         ref={ringRef}
         aria-hidden="true"
         className="pointer-events-none fixed left-0 top-0 z-[9998] flex items-center justify-center rounded-full"
         style={{
-          width: isView ? 84 : variant === 'link' ? 56 : 38,
-          height: isView ? 84 : variant === 'link' ? 56 : 38,
-          border: isView ? 'none' : '1px solid var(--accent)',
-          background: isView ? 'var(--accent)' : 'transparent',
-          opacity: visible ? 1 : 0,
+          display: 'none',
+          width: 38,
+          height: 38,
+          border: '1px solid var(--accent)',
+          background: 'transparent',
+          opacity: 0,
+          transform: 'translate(-50%, -50%)',
           transition:
             'width 0.35s cubic-bezier(0.16,1,0.3,1), height 0.35s cubic-bezier(0.16,1,0.3,1), background 0.3s ease, border-color 0.6s ease, opacity 0.2s ease',
           willChange: 'transform',
@@ -120,7 +151,7 @@ export default function CustomCursor() {
           className="font-mono text-[0.6rem] font-medium uppercase tracking-[0.2em]"
           style={{
             color: 'var(--ink)',
-            opacity: isView ? 1 : 0,
+            opacity: 0,
             transition: 'opacity 0.25s ease',
           }}
         >

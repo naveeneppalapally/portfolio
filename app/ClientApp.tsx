@@ -82,9 +82,8 @@ function AppContent() {
       // lerp mode: no long inertia tail, direction changes respond immediately
       lerp: 0.11,
       smoothWheel: true,
-      // Disable Lenis touch handling on mobile — native touch scroll is already
-      // smooth and Lenis fights it, causing reverse-scroll sticking.
-      smoothTouch: false,
+      // Lenis doesn't smooth touch by default — native mobile scroll handles
+      // reverse direction properly without intervention.
       touchMultiplier: isTouchDevice ? 1 : 1.4,
     });
     (window as unknown as { lenis?: Lenis }).lenis = lenis;

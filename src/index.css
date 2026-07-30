@@ -381,12 +381,15 @@ html.lh-mode .reveal-fade {
   position: fixed;
   inset: 0;
   z-index: 10000;
+  height: 100vh;
+  height: 100dvh; /* dynamic viewport height — tracks mobile URL bar */
   background: var(--ink);
   color: #F3F1EC;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: clamp(1.25rem, 3vw, 2.5rem);
+  overflow: hidden;
   transition: transform 1s var(--ease-expo-in-out);
   will-change: transform;
 }
