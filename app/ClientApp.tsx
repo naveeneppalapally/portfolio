@@ -77,8 +77,10 @@ function AppContent() {
     }
 
     const lenis = new Lenis({
-      duration: 1.15,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      // lerp mode (instead of duration + expo easing): no long inertia tail,
+      // so wheel direction changes respond immediately — fixes the "stuck /
+      // have to scroll harder" feeling when reversing from down to up.
+      lerp: 0.11,
       smoothWheel: true,
       touchMultiplier: 1.4,
     });
@@ -119,8 +121,13 @@ function AppContent() {
 
     let removeTimer = 0;
     let exitTimer = 0;
+    let safetyTimer = 0;
+    let ran = false;
 
     const runExit = () => {
+      if (ran) return; // prevent double-fire
+      ran = true;
+      window.clearTimeout(safetyTimer);
       // Brief hold on "100 / READY" so the final state registers
       exitTimer = window.setTimeout(() => {
         html.classList.add('pl-exit');
@@ -132,21 +139,19 @@ function AppContent() {
       }, 200);
     };
 
+    // The preloader script may have already finished before React hydrates
+    // (common on mobile where hydration is slower). Check the class first.
     if (html.classList.contains('pl-count-done')) {
       runExit();
     } else {
       window.addEventListener('preloader:done', runExit, { once: true });
-      // Safety: if the inline script somehow never fired, exit anyway
-      const safety = window.setTimeout(runExit, 4000);
-      return () => {
-        window.removeEventListener('preloader:done', runExit);
-        window.clearTimeout(safety);
-        window.clearTimeout(exitTimer);
-        window.clearTimeout(removeTimer);
-      };
+      // Safety: if the event somehow never fires, exit anyway (reduced from 4s)
+      safetyTimer = window.setTimeout(runExit, 2500);
     }
 
     return () => {
+      window.removeEventListener('preloader:done', runExit);
+      window.clearTimeout(safetyTimer);
       window.clearTimeout(exitTimer);
       window.clearTimeout(removeTimer);
     };
@@ -210,6 +215,8 @@ function AppContent() {
         <ViewErrorBoundary>
           <ClientOnly>
             <HomeView />
+            {/* Bridge About (paper) → Footer (ink) so the handoff isn't a hard cut */}
+            <div className="blend blend--paper-to-ink" aria-hidden="true" />
             <Footer />
           </ClientOnly>
         </ViewErrorBoundary>

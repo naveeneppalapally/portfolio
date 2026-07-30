@@ -82,7 +82,7 @@ export default function Footer() {
       ref={sectionRef}
       id="contact"
       data-accent="signal"
-      className="section overflow-hidden pt-[clamp(3rem,7vh,5rem)]"
+      className="section overflow-hidden pt-[clamp(3rem,7vh,5rem)] max-sm:pt-[2rem]"
     >
       <Marquee
         items={['Available for projects', 'Fixed scope', 'Retainer', 'Advisory', 'Worldwide']}
@@ -90,7 +90,7 @@ export default function Footer() {
         itemClassName="!text-[0.66rem]"
       />
 
-      <div className="px-[clamp(1.5rem,5vw,4rem)] pb-10 pt-[clamp(4rem,10vh,7rem)]">
+      <div className="px-[clamp(1.5rem,5vw,4rem)] pb-10 pt-[clamp(4rem,10vh,7rem)] max-sm:pt-[3rem]">
         <p className="eyebrow foot-fade">
           <span className="tick">{'// 07 — '}</span>Contact
         </p>

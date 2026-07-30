@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { gsap, ScrollTrigger } from '../lib/gsap';
 import { isLighthouse, prefersReducedMotion, scrollToSection } from '../lib/utils';
 import { useStaticMode } from '../hooks/useStaticMode';
@@ -8,11 +8,18 @@ import { useStaticMode } from '../hooks/useStaticMode';
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 /* ============================================
-   PROCESS — pinned horizontal track.
-   Five steps, each with a real artifact: brief, tokens,
-   component, timeline, report, followed by the project CTA.
-   Scroll drives the track.
+   PROCESS — §04. Horizontal film-strip scrub.
+
+   A 600vh section provides the scroll distance;
+   a CSS `sticky` viewport holds the frame while
+   GSAP ScrollTrigger (scrub — NO pin) maps that
+   vertical progress onto the track's translateX.
+   The browser owns the scroll height, so there
+   are no pin-spacers, no miscalculated heights,
+   and no jump when the section hands scroll back.
    ============================================ */
+
+/* ---------- Code block styling ---------- */
 
 const C = {
   kw: '#9B8CFF',     // keyword
@@ -40,6 +47,8 @@ function CodeCard({ title, tilt, children }: { title: string; tilt: number; chil
     </div>
   );
 }
+
+/* ---------- Step data ---------- */
 
 const STEPS: {
   num: string;
@@ -150,119 +159,82 @@ const STEPS: {
 const TOTAL_STEPS = STEPS.length + 1; // 5 steps + 1 CTA card = 6 panels
 
 export default function Process() {
-  const pinAreaRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
-  const staticMode = useStaticMode(); // JSX branches only (hydration-safe)
-  const noMotion = isLighthouse || prefersReducedMotion; // effect gates only
+  const staticMode = useStaticMode();
+  const noMotion = isLighthouse || prefersReducedMotion;
 
-  /* Pin + horizontal scrub */
+  /* Vertical scroll → horizontal track position.
+     CSS sticky holds the frame; ScrollTrigger only scrubs.
+     No pin, no anticipatePin, no spacer divs. */
   useIsoLayoutEffect(() => {
     if (noMotion) return;
-    const pinArea = pinAreaRef.current;
     const section = sectionRef.current;
     const track = trackRef.current;
-    if (!pinArea || !section || !track) return;
+    if (!section || !track) return;
 
     const ctx = gsap.context(() => {
-      // Measure the untransformed layout width so the final card's right edge
-      // lands on the viewport's right edge. offsetLeft/offsetWidth are layout
-      // values, so this remains stable while ScrollTrigger is scrubbing.
-      const getAmount = () => {
+      const endX = () => {
         const last = track.lastElementChild as HTMLElement | null;
-        if (!last) return Math.max(0, track.scrollWidth - window.innerWidth);
-        const contentWidth = last.offsetLeft + last.offsetWidth - track.offsetLeft;
-        return Math.max(0, contentWidth - window.innerWidth);
+        if (!last) return 0;
+        // Stop when the last card's right edge hits the viewport right edge (with padding)
+        const pad = window.innerWidth * 0.05;
+        return -(last.offsetLeft + last.offsetWidth - window.innerWidth + pad);
       };
 
-      // Give the final card a short exit interval after the horizontal travel
-      // completes. Without this, the pinned paper section is released on the
-      // same scroll tick that the next section begins, which feels like a cut.
-      const getExitDistance = () => Math.max(180, Math.min(window.innerHeight * 0.75, window.innerWidth * 0.22));
-      const getPinDistance = () => Math.max(window.innerHeight, getAmount() + getExitDistance());
-      const sizePinArea = () => {
-        pinArea.style.height = `${getPinDistance()}px`;
-      };
-      const getPinStart = () => pinArea.getBoundingClientRect().top + window.scrollY;
-      sizePinArea();
-
-      ScrollTrigger.create({
-        trigger: pinArea,
-        pin: section,
-        start: getPinStart,
-        end: () => getPinStart() + getPinDistance(),
-        scrub: true,
-        pinSpacing: false,
-        anticipatePin: 0,
-        invalidateOnRefresh: true,
-        refreshPriority: -10,
-        onRefreshInit: sizePinArea,
-        onEnter: () => {
-          section.style.visibility = 'visible';
-          section.style.opacity = '1';
-        },
-        onEnterBack: () => {
-          section.style.visibility = 'visible';
-          section.style.opacity = '1';
-        },
-        // The fade completes before the pinned viewport is released, so the
-        // following dark section never appears as an abrupt replacement.
-        onLeave: () => {
-          section.style.visibility = 'hidden';
-          section.style.opacity = '0';
-        },
-        onLeaveBack: () => {
-          section.style.visibility = 'visible';
-          section.style.opacity = '1';
-        },
-        onUpdate: (self) => {
-          const tp = self.progress;
-          const pinDistance = getPinDistance();
-          const horizontalProgress = Math.min(1, (tp * pinDistance) / Math.max(1, getAmount()));
-          gsap.set(track, { x: -getAmount() * horizontalProgress });
-
-          const exitStart = getAmount() / pinDistance;
-          const exitProgress = Math.max(0, (tp - exitStart) / Math.max(0.001, 1 - exitStart));
-          section.style.opacity = String(1 - exitProgress);
-
-          if (barRef.current) {
-            barRef.current.style.transform = `scaleX(${Math.min(1, horizontalProgress)})`;
-          }
-          if (counterRef.current) {
-            const step = Math.min(TOTAL_STEPS, Math.max(1, Math.ceil(horizontalProgress * TOTAL_STEPS)));
-            counterRef.current.textContent = `0${step} / 0${TOTAL_STEPS}`;
-          }
+      gsap.to(track, {
+        x: endX,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: true,
+          invalidateOnRefresh: true,
+          onUpdate: (self: ScrollTrigger) => {
+            if (barRef.current) {
+              barRef.current.style.transform = `scaleX(${self.progress})`;
+            }
+            if (counterRef.current) {
+              const step = Math.min(TOTAL_STEPS, Math.max(1, Math.ceil(self.progress * TOTAL_STEPS)));
+              counterRef.current.textContent = `0${step} / 0${TOTAL_STEPS}`;
+            }
+          },
         },
       });
     }, section);
 
+    let cancelled = false;
+    if (typeof document !== 'undefined' && document.fonts?.ready) {
+      document.fonts.ready
+        .then(() => { if (!cancelled) ScrollTrigger.refresh(); })
+        .catch(() => {});
+    }
+
     return () => {
+      cancelled = true;
       ctx.revert();
-      pinArea.style.height = '';
-      section.style.visibility = '';
-      section.style.opacity = '';
-      gsap.set(track, { clearProps: 'transform' });
     };
   }, [noMotion]);
 
   return (
-    <div ref={pinAreaRef} style={{ position: 'relative', zIndex: 5 }}>
-      <section
-        ref={sectionRef}
-        id="process"
-        data-accent="moss"
-        className="section section--paper"
-        style={{ zIndex: 5 }}
-      >
-      <div className={`flex h-screen items-center ${staticMode ? 'overflow-x-auto' : 'overflow-hidden'}`}>
+    <section
+      ref={sectionRef}
+      id="process"
+      data-accent="moss"
+      className={`section section--paper ${staticMode ? 'h-auto' : 'h-[450vh]'}`}
+      style={{ zIndex: 5 }}
+    >
+      <div className={`flex items-center ${staticMode ? 'overflow-x-auto py-[clamp(4rem,10vh,7rem)]' : 'sticky top-0 h-screen overflow-hidden'}`} style={{ position: staticMode ? undefined : 'sticky' }}>
         <div
           ref={trackRef}
-          className="flex w-max items-stretch will-change-transform"
+          className={`flex items-stretch will-change-transform ${staticMode ? 'w-full snap-x snap-mandatory gap-[5vw] overflow-x-auto px-[clamp(1.5rem,5vw,4rem)] pb-8' : 'w-max'}`}
+          {...(staticMode ? { 'data-lenis-prevent': true } : {})}
         >
           {/* Left padding spacer */}
-          <div className="w-[clamp(1.5rem,5vw,4rem)] shrink-0" aria-hidden="true" />
+          {!staticMode && <div className="w-[clamp(1.5rem,5vw,4rem)] shrink-0" aria-hidden="true" />}
 
           {/* Intro panel */}
           <div className="flex w-[86vw] shrink-0 flex-col justify-center sm:w-[42vw] lg:w-[34vw]">
@@ -281,11 +253,11 @@ export default function Process() {
             </span>
           </div>
 
-          {/* Step cards */}
+          {/* Step cards 01–05 */}
           {STEPS.map((s) => (
             <article
               key={s.num}
-              className="flex w-[84vw] shrink-0 flex-col justify-center sm:w-[46vw] lg:w-[34vw] ml-[5vw]"
+              className={`flex w-[84vw] shrink-0 flex-col justify-center sm:w-[46vw] lg:w-[34vw] ml-[5vw] ${staticMode ? 'snap-center' : ''}`}
             >
               <span
                 className="display select-none font-semibold"
@@ -309,9 +281,8 @@ export default function Process() {
             </article>
           ))}
 
-          {/* End CTA card — use the same width and gutter as the step cards so
-              it arrives immediately after Ship with the same visual rhythm. */}
-          <div className="ml-[5vw] flex w-[84vw] shrink-0 flex-col items-center justify-center text-center sm:w-[46vw] lg:w-[34vw]">
+          {/* CTA card 06 */}
+          <div className={`ml-[5vw] flex w-[84vw] shrink-0 flex-col items-center justify-center text-center sm:w-[46vw] lg:w-[34vw] ${staticMode ? 'snap-center' : ''}`}>
             <span
               className="display select-none font-semibold"
               style={{
@@ -339,28 +310,27 @@ export default function Process() {
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Progress rail (bottom of pinned viewport) */}
-      {!staticMode && (
-        <div className="pointer-events-none absolute bottom-8 left-[clamp(1.5rem,5vw,4rem)] right-[clamp(1.5rem,5vw,4rem)] flex items-center gap-6">
-          <span
-            ref={counterRef}
-            className="font-mono text-[0.66rem] uppercase tracking-[0.24em]"
-            style={{ color: 'var(--muted)' }}
-          >
-            01 / 06
-          </span>
-          <div className="hair-x relative flex-1">
-            <div
-              ref={barRef}
-              className="accent-bg absolute inset-0 origin-left"
-              style={{ transform: 'scaleX(0)' }}
-            />
+        {/* Progress rail — inside sticky container so it disappears with the section */}
+        {!staticMode && (
+          <div className="pointer-events-none absolute inset-x-[clamp(1.5rem,5vw,4rem)] bottom-8 flex items-center gap-6">
+            <span
+              ref={counterRef}
+              className="font-mono text-[0.66rem] uppercase tracking-[0.24em]"
+              style={{ color: 'var(--muted)' }}
+            >
+              01 / 06
+            </span>
+            <div className="hair-x relative flex-1">
+              <div
+                ref={barRef}
+                className="accent-bg absolute inset-0 origin-left"
+                style={{ transform: 'scaleX(0)' }}
+              />
+            </div>
           </div>
-        </div>
-      )}
-      </section>
-    </div>
+        )}
+      </div>
+    </section>
   );
 }

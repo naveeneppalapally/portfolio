@@ -41,7 +41,7 @@ export default function About() {
       id="about"
       style={{ zIndex: 1 }}
       data-accent="signal"
-      className="section section--paper px-[clamp(1.5rem,5vw,4rem)] py-[clamp(5rem,12vh,9rem)]"
+      className="section section--paper px-[clamp(1.5rem,5vw,4rem)] py-[clamp(5rem,12vh,9rem)] max-sm:pb-[3.5rem]"
     >
       <div className="mx-auto max-w-[1600px]">
         {/* Header */}

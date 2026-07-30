@@ -84,6 +84,23 @@
   --ease-expo-in-out: cubic-bezier(0.87, 0, 0.13, 1);
 }
 
+/* ---------- Accent re-tint (smooth) ---------- */
+/* Register --accent as an interpolable color so ThemeContext's flip on
+   <html> transitions the variable itself — every consumer (inline styles,
+   SVG strokes, utility classes) glides between accents instead of snapping.
+   Progressive enhancement: without @property support it flips instantly. */
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #FF4D1C;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    transition: --accent 0.6s ease;
+  }
+}
+
 
 /* ---------- Base ---------- */
 html {
@@ -146,6 +163,11 @@ body {
   background: var(--bg);
   color: var(--fg);
   z-index: var(--section-z, 1);
+  /* Clip horizontal bleed (reveal-left/right slide-ins, letter-spacing
+     trailing space) so off-canvas content can't force mobile viewport
+     expansion. `clip` (not `hidden`) creates no scroll container —
+     position:sticky children keep working. */
+  overflow-x: clip;
 }
 .section--paper {
   --bg: var(--paper);
@@ -464,6 +486,38 @@ html.pl-exit #preloader .pl-inner-fade {
 html.lh-mode #preloader,
 html.skip-loader-all #preloader {
   display: none !important;
+}
+
+/* ---------- Preloader: small screens ---------- */
+@media (max-width: 640px) {
+  #preloader {
+    padding: 1.25rem;
+  }
+  #preloader .pl-top {
+    font-size: 0.625rem;
+    letter-spacing: 0.2em;
+  }
+  #preloader .pl-word {
+    letter-spacing: 0.42em;
+  }
+  /* Stack the bottom row: counter on its own line, progress bar full width */
+  #preloader .pl-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.75rem;
+  }
+  #preloader .pl-counter {
+    font-size: clamp(3.5rem, 19vw, 5rem);
+  }
+  #preloader .pl-right {
+    width: 100%;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding-bottom: 0;
+  }
+  #preloader .pl-bar {
+    width: 100%;
+  }
 }
 
 /* SSR hero hint: hidden for real users once CSS loads; kept for LCP under LH */

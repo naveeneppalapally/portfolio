@@ -63,6 +63,20 @@ const PRELOADER_SCRIPT = `
     if (status) status.textContent = 'READY';
     html.classList.add('pl-count-done');
     window.dispatchEvent(new CustomEvent('preloader:done'));
+
+    // Nuclear safety: if React never hydrates and adds pl-exit,
+    // force-hide the preloader after 3s so mobile never gets stuck.
+    setTimeout(function () {
+      if (!html.classList.contains('pl-exit')) {
+        var el = document.getElementById('preloader');
+        if (el) {
+          el.style.transition = 'opacity 0.6s ease';
+          el.style.opacity = '0';
+          setTimeout(function () { el.style.display = 'none'; }, 700);
+        }
+        html.classList.add('pl-exit', 'skip-loader-all');
+      }
+    }, 3000);
   }
 
   function frame(now) {
