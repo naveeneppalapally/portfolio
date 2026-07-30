@@ -76,13 +76,16 @@ function AppContent() {
       return;
     }
 
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
     const lenis = new Lenis({
-      // lerp mode (instead of duration + expo easing): no long inertia tail,
-      // so wheel direction changes respond immediately — fixes the "stuck /
-      // have to scroll harder" feeling when reversing from down to up.
+      // lerp mode: no long inertia tail, direction changes respond immediately
       lerp: 0.11,
       smoothWheel: true,
-      touchMultiplier: 1.4,
+      // Disable Lenis touch handling on mobile — native touch scroll is already
+      // smooth and Lenis fights it, causing reverse-scroll sticking.
+      smoothTouch: false,
+      touchMultiplier: isTouchDevice ? 1 : 1.4,
     });
     (window as unknown as { lenis?: Lenis }).lenis = lenis;
 
