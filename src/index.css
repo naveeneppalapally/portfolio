@@ -187,6 +187,9 @@ body {
   display: block;
   height: clamp(90px, 14vh, 160px);
 }
+@media (max-width: 640px) {
+  .blend { height: clamp(60px, 18vh, 140px); }
+}
 .blend--paper-to-ink {
   background: linear-gradient(to bottom, var(--paper) 0%, var(--ink) 100%);
 }
@@ -507,7 +510,7 @@ html.skip-loader-all #preloader {
     gap: 1.75rem;
   }
   #preloader .pl-counter {
-    font-size: clamp(3.5rem, 19vw, 5rem);
+    font-size: clamp(2.8rem, 14vw, 4rem);
   }
   #preloader .pl-right {
     width: 100%;

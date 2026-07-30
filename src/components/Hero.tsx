@@ -48,10 +48,10 @@ export default function Hero() {
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-      tl.to('.hw', { yPercent: 0, duration: 1.25, stagger: 0.075 }).to(
+      tl.to('.hw', { yPercent: 0, duration: 1.4, stagger: 0.12 }).to(
         '.hero-fade',
-        { autoAlpha: 1, y: 0, duration: 1, stagger: 0.09 },
-        0.35
+        { autoAlpha: 1, y: 0, duration: 1.3, stagger: 0.14 },
+        0.5
       );
 
       if (underlineRef.current) {
